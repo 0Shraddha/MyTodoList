@@ -1,115 +1,90 @@
-<?php
-include "db_conn.php";
+<?php 
+    // initialize errors variable
+	$errors = "";
 
-//creation of DataBase
-// $sql = "CREATE DATABASE todo";
-// $result = mysqli_query($conn, $sql);
+	// connect to database
+	$db = mysqli_connect("localhost", "root", "", "todo");
 
-// if(!$result){
-//     die("Connection failed: " . mysqli_query_error());
-// }
+	// insert a quote if submit button is clicked
+	if (isset($_POST['submit'])) {
+		if (empty($_POST['task'])) {
+			$errors = "You must fill in the task";
+		}else{
+			$task = $_POST['task'];
+			$sql = "INSERT INTO data (task) VALUES ('$task')";
+			mysqli_query($db, $sql);
+			header('location: index.php');
+		}
+	}	
+  // delete task
+if (isset($_GET['del_task'])) {
+	$id = $_GET['del_task'];
 
-//Creation of table
-// $sql = "CREATE TABLE `data`(
-//     id INT(10) PRIMARY KEY NOT NULL AUTO_INCREMENT, 
-//     task VARCHAR(500)
-//     )";
-// // $result = mysqli_query($conn, $sql);
-// $result = mysqli_query($conn, $sql);
+	mysqli_query($db, "DELETE FROM data WHERE id=".$id);
+	header('location: index.php');
+}
 
-// if(!$result){
-//     echo "Error creating table: " . $conn->error;
-// }
+//edit task
+if (isset($_GET['edit_task'])) {
+  $id = $_GET['edit_task'];
+  $update = true;
+  $record = mysqli_query($db, "SELECT * FROM data WHERE id=$id");
 
-$task = $_POST["task"];
-$sql = "INSERT INTO `data` (id, task)
-VALUES ('', '$task')";
-
-if ($conn->query($sql) === TRUE) {
-  echo "New record created successfully";
-} else {
-  echo "Error: " . $sql . "<br>" . $conn->error;
+  if (count($record) == 1 ) {
+    $n = mysqli_fetch_array($record);
+    $tasks = $n['tasks'];
+  }
 }
 
 ?>
 
-
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-<style>
-  form{
-    width: 50%; 
-	margin: 50px auto; 
-	border-radius: 5px; 
-	padding: 10px;
-	background: #E4C9FF;
-	border: 1px solid #A65FF6;
-  }
-.add_btn{
-    background: #77DD76;
-    padding: 2px 10px;
-	border: 1px solid #d9dadc;
-  border-radius:3px;
-  color: #383838;
-  }
-  .edit_btn{
-    background: #FFB449;
-    padding: 2px 10px;
-	border: 1px solid #d9dadc;
-  border-radius:3px;
-  color: #383838;
-  }
-  .del_btn{
-    background: #ff6961;
-    padding: 2px 10px;
-	border: 1px solid #d9dadc;
-  border-radius:3px;
-  color: #383838;
-  }
-  .add_btn:hover,.edit_btn:hover,.del_btn:hover{
-    border: 1px solid #383838;
-  }
-</style>
-
-    <title>Never Ending List</title>
-  </head>
-  <body>
-   
-  <!-- <div class="container pt-5">
-    <h3>Never Ending List</h3>
-    <div class="p-5">
-        <label for="exampleFormControlInput1" class="form-label">Todo Title</label>
-        <input type="text" name="task" class="task" id="task" placeholder="Type here....">
-    </div>
-  </div> -->
-
-  <div class="heading" style="width: 50%;margin: 30px auto; ">
-  <h3>Never Ending List</h3>
+<!DOCTYPE html>
+<html>
+<head>
+	<title>ToDo List Application</title>
+  <link rel="stylesheet" type="text/css" href="index.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+</head>
+<body>
+	<div class="heading">
+		<h2 style="font-style: 'Hervetica';">My ToDo List</h2>
 	</div>
-	<form method="post" action="#">
-  <label for="exampleFormControlInput1" class="form-label">Todo Title</label><br>
-		<input type="text" name="task" class="task_input" size="50">
-		<button type="submit" name="submit" id="add_btn" class="add_btn">Add</button>
-    <button type="edit" name="edit" id="edit_btn" class="edit_btn">Edit</button>
-    <button type="del" name="del" id="del_btn" class="del_btn">Delete</button>
+	<form method="post" action="index.php" class="input_form">
+  <?php if (isset($errors)) { ?>
+	<p><?php echo $errors; ?></p>
+<?php } ?>
+		<input type="text" name="task" class="task_input">
+		<button type="submit" name="submit" class="btn btn-outline-secondary">Add Task</button>
 
 	</form>
+  <table>
+	<thead>
+		<tr>
+			<th>S.No.</th>
+			<th>Tasks</th>
+			<th>Action</th>
+		</tr>
+	</thead>
+
+	<tbody>
+		<?php 
+		// select all tasks if page is visited or refreshed
+		$tasks = mysqli_query($db, "SELECT * FROM data");
+
+		$i = 1; while ($row = mysqli_fetch_array($tasks)) { ?>
+			<tr>
+				<td> <?php echo $i; ?> </td>
+				<td class="task"> <?php echo $row['task']; ?> </td>
+				<td> 
+					<a href="index.php?del_task=<?php echo $row['id'] ?>"><button type="button" class="btn btn-outline-warning">Done</button></a> 
+				</td>
+
+			</tr>
+		<?php $i++; } ?>	
+	</tbody>
+</table>
 
 
 
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-
-    <!-- Option 2: Separate Popper and Bootstrap JS -->
-    <!--
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
-    -->
-  </body>
+</body>
 </html>

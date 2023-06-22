@@ -1,0 +1,50 @@
+.heading{
+	width: 50%;
+	margin: 30px auto;
+	text-align: center;
+	color: 	#23678e;
+	/* background: #b2e0ff; */
+	border: none;
+    text-transform:uppercase;
+	
+}
+form {
+	width: 50%; 
+	margin: 30px auto; 
+	border-radius: 5px; 
+	padding: 10px;
+	/* background: #b2e0ff;
+	border: 1px solid #23678e; */
+}
+form p {
+	color: red;
+	margin: 0px;
+}
+.task_input {
+	width: 75%;
+	height: 50px; 
+	padding: 15px;
+	border: 1px solid #23678e;
+}
+
+
+table{
+    width: 50%;
+    margin: 30px auto;
+    /* border-collapse: collapse; */
+    padding: 40px;
+}
+thead{
+	text-align: right;
+}
+
+th{
+	padding: 15px 10px;
+    background-color: #dbf1ff;
+}
+
+
+.task {
+	text-align: center;
+}
+
